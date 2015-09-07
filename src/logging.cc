@@ -148,6 +148,9 @@ GLOG_DEFINE_int32(logemaillevel, 999,
 GLOG_DEFINE_string(logmailer, "/bin/mail",
                    "Mailer used to send logging email");
 
+GLOG_DEFINE_int32(log_file_name_interval, 5,
+                  "New log file will be created every X min, default 5 min");
+
 // Compute the default value for --log_dir
 static const char* DefaultLogDir() {
   const char* env;
@@ -965,9 +968,9 @@ void LogFileObject::Write(bool force_flush,
                     << "T"
                     << setw(2) << tm_time.tm_hour
                     << ":"
-                    << setw(2) << tm_time.tm_min
+                    << setw(2) << tm_time.tm_min / FLAGS_log_file_name_interval * FLAGS_log_file_name_interval
                     << ":"
-                    << setw(2) << tm_time.tm_sec
+                    << setw(2) << "00"
                     << "Z";
     const string& time_pid_string = time_pid_stream.str();
 
