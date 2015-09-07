@@ -47,6 +47,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <stdarg.h>
 #include <stdlib.h>
 #ifdef HAVE_PWD_H
@@ -1218,6 +1219,9 @@ void LogMessage::Init(const char* file,
   data_->timestamp_ = static_cast<time_t>(now);
   localtime_r(&data_->timestamp_, &data_->tm_time_);
   int usecs = static_cast<int>((now - data_->timestamp_) * 1000000);
+  // std::cout << "now:" << now << " timestamp:" << data_->timestamp_ << std::endl;
+  // std::cout << "usecs:" << usecs << std::endl;
+  // std::cout << "nano:" << CycleClock_Now() << std::endl;
   RawLog__SetLastTime(data_->tm_time_, usecs);
 
   data_->num_chars_to_log_ = 0;
@@ -1367,25 +1371,36 @@ void LogMessage::Flush() {
     }
   }
   // std::cout << std::endl << ss << std::endl;
-  for(int i = 0, j = data_->num_chars_to_log_ - len_s + len_f; i < strlen(ss);){
+  for(int i = 0, j = data_->num_prefix_chars_; i < strlen(ss);){
     //std::cout << "1 " << data_->message_text_[j] << " 2 " << ss[i] << std::endl;
     data_->message_text_[j++] = ss[i++];
   }
-  //std::cout << ss << std::endl;
+  // std::cout << ss << std::endl;
   // std::cout << data_->num_chars_to_log_ << std::endl;
+  // std::cout << data_->num_prefix_chars_ << std::endl;
   // std::cout << data_->num_chars_to_log_ << " " << len_s << " " << len_f << " " << strlen(ss) << std::endl;
-  data_->num_chars_to_log_ += strlen(ss) + len_f - len_s;
+  data_->num_chars_to_log_ = strlen(ss) + data_->num_prefix_chars_;
   // std::cout << data_->num_chars_to_log_ << std::endl;
   delete [] ss;
+  int64 nano = CycleClock_Now();
+  int sec = static_cast<int>(nano * 0.000001);
+  int nanosec = (nano * 0.000001 - sec) * 1000000000;
+  ostringstream stream;
+  stream << "\" " << sec << nanosec;
+  string nanotime = stream.str();
+  for( int i = 0; i < nanotime.size();){
+    data_->message_text_[data_->num_chars_to_log_++] = nanotime[i++];
+  }
+  // std::cout << "nano:" << nanotime << std::endl;
 
 
   if (append_newline) {
     //original_final_char = data_->message_text_[data_->num_chars_to_log_];
-    data_->message_text_[data_->num_chars_to_log_++] = '\"';
+    // data_->message_text_[data_->num_chars_to_log_++] = '\"';
     data_->message_text_[data_->num_chars_to_log_++] = '\n';
   } else {
     //original_final_char = data_->message_text_[data_->num_chars_to_log_];
-    data_->message_text_[data_->num_chars_to_log_-1] = '\"';
+    // data_->message_text_[data_->num_chars_to_log_-1] = '\"';
     data_->message_text_[data_->num_chars_to_log_++] = '\n';
   }
 
