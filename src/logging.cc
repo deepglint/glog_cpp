@@ -148,6 +148,8 @@ GLOG_DEFINE_int32(logemaillevel, 999,
 GLOG_DEFINE_string(logmailer, "/bin/mail",
                    "Mailer used to send logging email");
 
+GLOG_DEFINE_string(log_table, "libra", "table name for database");
+
 GLOG_DEFINE_int32(log_file_name_interval, 5,
                   "New log file will be created every X min, default 5 min");
 
@@ -966,9 +968,11 @@ void LogFileObject::Write(bool force_flush,
                     << "-"
                     << setw(2) << tm_time.tm_mday
                     << "T"
-                    << setw(2) << tm_time.tm_hour
+		    << setw(2) << "00"
+                    //<< setw(2) << tm_time.tm_hour
                     << ":"
-                    << setw(2) << tm_time.tm_min / FLAGS_log_file_name_interval * FLAGS_log_file_name_interval
+		    << setw(2) << "00"
+                    //<< setw(2) << tm_time.tm_min / FLAGS_log_file_name_interval * FLAGS_log_file_name_interval
                     << ":"
                     << setw(2) << "00"
                     << "Z";
@@ -1012,7 +1016,7 @@ void LogFileObject::Write(bool force_flush,
       string deepglint_filename = "LOG.";
       string hostname;
       GetHostName(&hostname);
-      deepglint_filename += hostname + ".";
+      //deepglint_filename += hostname + ".";
 
       // We're going to (potentially) try to put logs in several different dirs
       const vector<string> & log_dirs = GetLoggingDirectories();
@@ -1239,7 +1243,9 @@ void LogMessage::Init(const char* file,
   // We exclude the thread_id for the default thread.
   if (FLAGS_log_prefix && (line != kNoLogPrefix)) {
     string program(glog_internal_namespace_::ProgramInvocationShortName());
-    stream() << program
+    stream() << FLAGS_log_table
+	     << ",program="
+	     << program
              << ",type="
              << LogSeverityNames[severity]
              << " value="
