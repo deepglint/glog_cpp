@@ -133,7 +133,7 @@ GLOG_DEFINE_string(alsologtoemail, "",
                    "in addition to logfiles");
 GLOG_DEFINE_bool(log_prefix, true,
                  "Prepend the log prefix to the start of each log line");
-GLOG_DEFINE_int32(minloglevel, 0, "Messages logged at a lower level than this don't "
+GLOG_DEFINE_int32(minloglevel, 1, "Messages logged at a lower level than this don't "
                   "actually get logged anywhere");
 GLOG_DEFINE_int32(logbuflevel, 0,
                   "Buffer log messages logged at this level or lower"
